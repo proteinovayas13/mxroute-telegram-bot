@@ -35,7 +35,6 @@ jobs:
           text = f'''MXroute Webmail
           
           Войти: {WEBMAIL}
-          Обновлено: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}'''
           
           r = requests.post(
               f'https://api.telegram.org/bot{TOKEN}/sendMessage',
