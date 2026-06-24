@@ -1,8 +1,8 @@
-﻿name: Send Webmail Link
+name: Send Webmail Link
 
 on:
   schedule:
-    - cron: '0 9 * * *'
+    - cron: '*/40 * * * *'  # Каждые 40 минут
   workflow_dispatch:
 
 jobs:
@@ -10,12 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      
       - name: Install dependencies
         run: pip install requests
+      
       - name: Send message
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -24,10 +27,24 @@ jobs:
           python -c "
           import requests
           from datetime import datetime
+          
           TOKEN = '${{ secrets.TELEGRAM_BOT_TOKEN }}'
           CHAT_ID = '${{ secrets.TELEGRAM_CHAT_ID }}'
           WEBMAIL = 'https://heracles.mxrouting.net/webmail'
-          text = f'MXroute Webmail\n\nВойти: {WEBMAIL}\nСервер: heracles.mxrouting.net\nЛогин: oookzgom1\nОбновлено: {datetime.now()}'
-          r = requests.post(f'https://api.telegram.org/bot{TOKEN}/sendMessage', json={'chat_id': CHAT_ID, 'text': text})
-          print('Sent!' if r.ok else r.text)
+          
+          text = f'''MXroute Webmail
+          
+          Войти: {WEBMAIL}
+          Обновлено: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}'''
+          
+          r = requests.post(
+              f'https://api.telegram.org/bot{TOKEN}/sendMessage',
+              json={'chat_id': CHAT_ID, 'text': text},
+              timeout=10
+          )
+          
+          if r.ok:
+              print('Sent!')
+          else:
+              print(f'Error: {r.status_code} - {r.text}')
           "
